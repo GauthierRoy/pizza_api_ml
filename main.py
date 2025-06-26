@@ -7,32 +7,15 @@ import joblib
 from schemas import PizzaRequestInput  # Your Pydantic and SQLAlchemy models
 from feature_engineering import create_features_for_model
 from models import PredictionLog
-from database import (
-    Base,
-    engine,
-    get_db,
-)  # Import from our updated database.py
+from database import Base, engine, get_db, IS_TESTING  # Import from our updated database.py
 
-from contextlib import asynccontextmanager
-# Base.metadata.create_all(bind=engine)
-
-
-# ADD THIS LIFESPAN FUNCTION
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # On startup, create the database tables
-    print("Startup: Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    yield
-    # On shutdown (not used in this case, but good practice)
-    print("Shutdown: Cleaning up...")
-
+# Always create tables, regardless of testing mode
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Pizza Request Success Predictor API",
     description="Predicts whether a Reddit 'Random Acts of Pizza' request will be fulfilled.",
     version="1.0",
-    lifespan=lifespan,
 )
 
 # 2. Load the trained model pipeline

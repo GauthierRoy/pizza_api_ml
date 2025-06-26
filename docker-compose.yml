@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # The Database Service
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    # Environment variables are now read from the .env file
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      # You can also use variables for ports
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    # This makes sure the container is healthy before the API starts
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # The API Service
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    # Environment variables are also read from the .env file for this service
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    # depends_on now waits for the healthcheck to pass, which is more reliable
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
