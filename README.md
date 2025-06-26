@@ -28,7 +28,7 @@ This project analyzes 4,040 pizza requests from the Reddit community "Random Act
 
 4. **Build a machine learning model**
    - `notebooks/building_ml_model.ipynb` - Model development, evaluation, and selection
-   - `src/train.py` - Model training script using FLAML AutoML
+   - `src/train.py` - Model training script
 
 5. **Export your model**
    - `src/train.py` - Model export functionality
@@ -118,12 +118,10 @@ The entire analysis can be found in `notebooks/preliminary_analysis.ipynb`.
 
 ### Performance
 
-*   **ROC AUC**: The final model achieved a score of **0.7550** ROC on holdout test set and 0.7267 on internal validation: .
-*   **Cross-validation**: Stratified 5-fold cross-validation was used to handle class imbalance.
-*   **Model**: The best-performing algorithm selected by FLAML was a tuned **RandomForestClassifier**.
+*   The selected **Gaussian Naive Bayes** model achieved an **F1-Score of 0.38** and a **ROC AUC of 0.68** on the holdout test set.
+*   This result, while modest, was significantly better than other baselines, demonstrating the model's effectiveness at handling the probabilistic nature of the features without overfitting to noise.
 
 The entire pipeline and model selection process can be found in `notebooks/building_ml_model.ipynb`, `src/pipeline.py`, and `src/train.py`.
-
 ## 🚀 REST API Service
 
 ### Features
@@ -222,18 +220,9 @@ python -m pytest tests -v
 
 ### Metrics Used
 
-*   **Primary**: ROC AUC (handles class imbalance well).
-*   **Secondary**: Precision, Recall, F1-score.
+*   **Primary**: F1-score (handles class imbalance well).
+*   **Secondary**: Precision, Recall, ROC AUC. 
 *   **Cross-validation**: Stratified K-fold to ensure representative splits.
-
-### Feature Importance
-
-Top predictive features identified:
-1.  Account age at request time
-2.  Previous RAOP activity
-3.  Request text characteristics
-4.  User karma/reputation
-5.  Temporal patterns (time of day, day of week)
 
 ## 🔧 Configuration
 
@@ -252,4 +241,9 @@ POSTGRES_PORT=5432
 
 ## 📈 Future Improvements
 
-I'd like to fine-tune a modern BERT model to try the classification using only the text; the results could be surprising. Some of the other features could potentially be concatenated to the text (e.g., subreddits, time, and day).
+
+The Naive Bayes model provided a robust baseline, but its performance is ultimately limited by the simplicity of the features it was given. The most promising path to a significant improvement lies in extracting deeper, more meaningful signals from the request text.
+
+*   **Deep Text Understanding with a Language Model:** The highest-impact next step would be to fine-tune a modern language model like BERT. Unlike our current word-counting approach, BERT can understand the context, sentiment, and nuance of the request narrative. This could unlock the predictive power hidden in people's stories.
+
+*   **Re-evaluating Complex Models on Better Features:** With powerful text embeddings from a model like BERT, we could then re-evaluate more complex models like LightGBM or a Neural Network. They would finally have a strong enough signal to learn from without overfitting, likely surpassing the simpler Naive Bayes baseline and leading to a state-of-the-art solution.

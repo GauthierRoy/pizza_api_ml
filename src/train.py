@@ -4,9 +4,12 @@ import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from flaml import AutoML
+from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.metrics import f1_score, roc_auc_score, classification_report
 
-from .pipeline import build_pipeline
+
+from .pipeline import build_pipeline, to_dense
 
 print("Loading raw data...")
 raw_df = pd.read_json("data/dataset.json")
@@ -28,38 +31,35 @@ preprocessor_pipeline = build_pipeline()
 print("Fitting the preprocessor on the training data...")
 X_train_processed = preprocessor_pipeline.fit_transform(X_train, y_train)
 X_test_processed = preprocessor_pipeline.transform(X_test)
-print(f"Shape of processed training data for FLAML: {X_train_processed.shape}")
+print(f"Shape of processed training data: {X_train_processed.shape}")
 
 
-print("\nStarting FLAML search on pre-processed data...")
-automl = AutoML()
-settings = {
-    "time_budget": 400,
-    "metric": "roc_auc",
-    "task": "classification",
-    "log_file_name": "src/flaml_run.log",
-    "seed": 42,
-}
-automl.fit(X_train=X_train_processed, y_train=y_train, **settings)
-print("FLAML search complete.")
+# Since Naive Bayes needs a dense array, we convert the sparse matrix
+X_train_dense = X_train_processed.toarray()
+X_test_dense = X_test_processed.toarray()
 
-# evaluate the best model found by FLAML
-print("\n--- FLAML Results ---")
-best_flaml_model = automl.model.estimator
-print(f"Best model found: {best_flaml_model.__class__.__name__}")
-print(f"Best ROC AUC on internal validation: {1 - automl.best_loss:.4f}")
+print("\nTraining and evaluating Naive Bayes model...")
+nb_model = GaussianNB()
+nb_model.fit(X_train_dense, y_train)
 
 # evaluate on the holdout test set to confirm performance
-test_score = automl.score(X_test_processed, y_test)
-print(f"ROC AUC on holdout test set: {test_score:.4f}")
+y_pred = nb_model.predict(X_test_dense)
+y_pred_proba = nb_model.predict_proba(X_test_dense)[:, 1]
+
+print("\n--- Naive Bayes Performance on Holdout Test Set ---")
+print(classification_report(y_test, y_pred))
+print(f"F1 Score: {f1_score(y_test, y_pred):.4f}")
+print(f"ROC AUC:  {roc_auc_score(y_test, y_pred_proba):.4f}")
 
 
 # build
+
 print("\nBuilding the final production pipeline with the best model...")
 final_production_pipeline = Pipeline(
     steps=[
-        ("preprocessor", preprocessor_pipeline),
-        ("classifier", best_flaml_model),
+        ("preprocessor", build_pipeline()),
+        ("to_dense", FunctionTransformer(to_dense)),
+        ("classifier", GaussianNB()),
     ]
 )
 

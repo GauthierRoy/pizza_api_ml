@@ -58,7 +58,6 @@ def create_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-
 def build_pipeline() -> Pipeline:
     """Builds the full data processing and modeling pipeline."""
 
@@ -101,3 +100,8 @@ def build_pipeline() -> Pipeline:
     )
 
     return master_pipeline
+
+
+def to_dense(X):
+    """Converts a sparse matrix to a dense numpy array."""
+    return X.toarray()
