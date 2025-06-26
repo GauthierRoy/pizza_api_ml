@@ -1,24 +1,20 @@
 # Dockerfile
 
-# 1. Use an official, lightweight Python base image
 FROM python:3.12.11-slim
 
-# 2. Set the working directory inside the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# 3. Copy the requirements file
 COPY requirements.txt .
 
-# 4. Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Copy the rest of your application code into the container
+# Copy the rest of your application code into the container
 COPY ./models/pizza_request_model.joblib ./models/
 COPY ./src ./src
 
-# 6. Expose the port the app runs on
+# expose the port the app runs on
 EXPOSE 8000
 
-# 7. The command to run your application when the container starts
-# Use "0.0.0.0" to make it accessible from outside the container
+# "0.0.0.0" to make it accessible from outside the container
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
