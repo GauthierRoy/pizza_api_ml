@@ -4,7 +4,7 @@ import time
 import subprocess
 import pytest
 
-# issue, will write into the real database.
+# WARNING: issue, will write into the real database.
 
 simple_valid_test_payload = {
     "request_id": "test_e2e_123",
@@ -55,7 +55,7 @@ def running_service():
     api_url = "http://localhost:8000"
 
     try:
-        # 1. start Docker containers
+        # start Docker containers
         print("\n--- [SETUP] Starting Docker services... ---")
         subprocess.run(["docker", "compose", "up", "-d", "--build"], check=True)
 

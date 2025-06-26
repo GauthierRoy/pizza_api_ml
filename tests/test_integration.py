@@ -5,16 +5,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import Mock
 
-os.environ["TESTING"] = "true"  # Set an environment variable to indicate testing mode
+os.environ["TESTING"] = "true"
 
-# Import the main application and dependencies we need to control
 from src.main import app, get_db
-from src.database import Base  # Use the same Base from your app
+from src.database import Base
 from src.models import PredictionLog
-import src.main  # Import the module (not as alias)
+import src.main  
 
-# ---  Centralized Test Database Configuration ---
-# We define the test database engine and session factory here.
+# test database engine and session factory 
 TEST_DB_FILE = "./test_integration.db"
 TEST_DATABASE_URL = f"sqlite:///{TEST_DB_FILE}"
 
@@ -24,7 +22,7 @@ test_engine = create_engine(
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
-# --- Fixture to delete the DB file after the entire test session ---
+# --db cleanup after entire test session ---
 @pytest.fixture(scope="session", autouse=True)
 def cleanup_test_db_file():
     """
@@ -36,22 +34,20 @@ def cleanup_test_db_file():
         os.remove(TEST_DB_FILE)
 
 
-# --- Step 2: A Single Fixture to Manage the Database Schema ---
 @pytest.fixture(scope="function")
 def db_setup_and_teardown():
     """
     This is the core fixture that manages the database state.
     It creates all tables before a test runs and drops them all afterward.
     """
-    # Create all tables defined in your models that use the `Base` declarative base
+    # vreate all tables defined in your models that use the `Base` declarative base
     Base.metadata.create_all(bind=test_engine)
     yield
-    # Drop all tables to ensure a clean slate for the next test
+    # drop all tables to ensure a clean slate for the next test
     Base.metadata.drop_all(bind=test_engine)
 
 
-# --- Step 3: Fixture for an Overridden Database Session ---
-# This function will be injected into the FastAPI app during tests
+# function that will be injected into the FastAPI app during tests
 def override_get_db():
     """A replacement for the `get_db` dependency that uses the test database."""
     try:
@@ -61,7 +57,6 @@ def override_get_db():
         db.close()
 
 
-# --- Step 4: The Test Client Fixture ---
 @pytest.fixture(scope="function")
 def client(db_setup_and_teardown, monkeypatch):
     """
@@ -85,7 +80,6 @@ def client(db_setup_and_teardown, monkeypatch):
     app.dependency_overrides.clear()
 
 
-# --- Step 5: Fixture for Direct Database Verification ---
 @pytest.fixture(scope="function")
 def db_session(db_setup_and_teardown):
     """
@@ -96,8 +90,6 @@ def db_session(db_setup_and_teardown):
     yield db
     db.close()
 
-
-# --- Your Tests (These remain unchanged) ---
 
 
 def test_valid_prediction(client, db_session):
@@ -125,17 +117,16 @@ def test_valid_prediction(client, db_session):
         "unix_timestamp_of_request": 1380000000.0,
     }
 
-    # ACT
     response = client.post("/predict", json=valid_payload)
 
-    # ASSERT - API Response
+    # AssertAPI Response
     assert response.status_code == 200
     data = response.json()
     assert data["prediction_label"] == "Pizza Received"
     assert data["prediction_value"] == 1
     assert data["probability_of_success"] == 0.9
 
-    # ASSERT - Database Log
+    # Assert Database Log
     log_entry = db_session.query(PredictionLog).first()
     assert log_entry is not None
     assert log_entry.prediction_value == 1
@@ -163,12 +154,12 @@ def test_invalid_prediction_missing_field(client, db_session):
         "requester_upvotes_plus_downvotes_at_request": 100,
     }
 
-    # ACT
     response = client.post("/predict", json=invalid_payload)
 
-    # ASSERT - API Response
+    # assert
+    # API Response
     assert response.status_code == 422
 
-    # ASSERT - Database Log (or lack thereof)
+    # Database Log
     log_count = db_session.query(PredictionLog).count()
     assert log_count == 0
