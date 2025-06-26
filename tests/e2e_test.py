@@ -77,7 +77,7 @@ def running_service():
         yield api_url
 
     finally:
-        # 4. TEARDOWN: This code runs after all tests are done
+        # TEARDOWN: This code runs after all tests are done
         print("\n--- [TEARDOWN] Shutting down Docker services... ---")
         subprocess.run(["docker", "compose", "down"])
 
