@@ -3,10 +3,10 @@ import datetime
 from sqlalchemy import Column, Integer, String, Float, JSON, DateTime
 
 # Import the Base class from your database setup
-from database import Base
+from .database import Base
 
 
-# Now, we define your table model here, inheriting from the imported Base
+# we define your table model here, inheriting from the imported Base
 class PredictionLog(Base):
     __tablename__ = "prediction_logs"
 

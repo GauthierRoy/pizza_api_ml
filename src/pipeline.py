@@ -5,7 +5,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
 
 
 def drop_leakage_and_redundant_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -58,8 +57,6 @@ def create_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
     )
     return df
 
-
-# --- Main Pipeline Builder ---
 
 
 def build_pipeline() -> Pipeline:

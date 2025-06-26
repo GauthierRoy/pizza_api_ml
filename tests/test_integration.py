@@ -5,15 +5,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import Mock
 
-# Import the main application and dependencies we need to control
-import main
-from main import app, get_db
-from database import Base  # Use the same Base from your app
-from models import PredictionLog
+os.environ["TESTING"] = "true"  # Set an environment variable to indicate testing mode
 
-# --- Step 1: Centralized Test Database Configuration ---
+# Import the main application and dependencies we need to control
+from src.main import app, get_db
+from src.database import Base  # Use the same Base from your app
+from src.models import PredictionLog
+import src.main  # Import the module (not as alias)
+
+# ---  Centralized Test Database Configuration ---
 # We define the test database engine and session factory here.
-# Using an in-memory SQLite DB is fast and ensures tests are isolated.
 TEST_DB_FILE = "./test_integration.db"
 TEST_DATABASE_URL = f"sqlite:///{TEST_DB_FILE}"
 
@@ -67,15 +68,11 @@ def client(db_setup_and_teardown, monkeypatch):
     This fixture sets up the test client. It depends on `db_setup_and_teardown`
     to ensure the database is ready *before* the client is created.
     """
-    # Patch the engine in the main application module. This is critical
-    # so that the app's lifespan event uses the in-memory test database.
-    monkeypatch.setattr(main, "engine", test_engine)
-
     # Mock the machine learning model to avoid loading the actual file
     mock_model = Mock()
     mock_model.predict.return_value = [1]
     mock_model.predict_proba.return_value = [[0.1, 0.9]]
-    monkeypatch.setattr(main, "model", mock_model)
+    monkeypatch.setattr(src.main, "model_pipeline", mock_model)
 
     # Apply the dependency override for the /predict endpoint
     app.dependency_overrides[get_db] = override_get_db
@@ -110,8 +107,10 @@ def test_valid_prediction(client, db_session):
     THEN it should return a 200 OK, the correct prediction, and create a DB log
     """
     valid_payload = {
+        "request_id": "test_123",
         "request_title": "Valid integration test",
         "request_text_edit_aware": "This is a valid test for the integration.",
+        "requester_username": "test_user",
         "unix_timestamp_of_request_utc": 1380000000.0,
         "requester_account_age_in_days_at_request": 100,
         "requester_days_since_first_post_on_raop_at_request": 10,
@@ -122,6 +121,8 @@ def test_valid_prediction(client, db_session):
         "requester_number_of_subreddits_at_request": 3,
         "requester_upvotes_minus_downvotes_at_request": 50,
         "requester_upvotes_plus_downvotes_at_request": 100,
+        "requester_subreddits_at_request": ["test", "pizza"],
+        "unix_timestamp_of_request": 1380000000.0,
     }
 
     # ACT

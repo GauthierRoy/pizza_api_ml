@@ -1,17 +1,26 @@
-# Web framework and server
+# Api
 fastapi==0.115.13
 uvicorn==0.34.3
 
-# Machine Learning and Data
+# ML
 scikit-learn==1.4.2
 joblib==1.4.2
 pandas==2.1.4
 numpy==1.26.4
 xgboost==2.1.4
 
-# Database
+# Db
 SQLAlchemy==2.0.41
 psycopg2-binary==2.9.10
 
-# To delete
-python-dotenv
+# Environment and utilities
+python-dotenv==1.0.0
+
+# ML AutoML
+flaml>=2.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
+requests>=2.31.0

@@ -8,14 +8,53 @@ This project analyzes 4,040 pizza requests from the Reddit community "Random Act
 
 ## Recommended Reading Order
 
-1.  `notebooks/preliminary_analysis.ipynb`
-2.  `src/pipeline.py`
-3.  `notebooks/building_ml_model.ipynb`
-4.  `src/train.py`
-5.  `src/main.py`
-6.  `src/schemas.py`, `src/database.py`, `src/models.py`
-7.  `docker-compose.yml` & `Dockerfile`
-8.  `tests/`
+## 📚 Challenge Question Mapping
+
+### First Part: Building a Model
+
+1. **Get the dataset & Clean the data** 
+   - `notebooks/preliminary_analysis.ipynb` - Data loading, cleaning, and quality improvement
+
+2. **Display statistics**
+   - `notebooks/preliminary_analysis.ipynb` - All four required statistics:
+     * Pizza fulfillment prevalence 
+     * Top 10 subreddits analysis
+     * 6-month rolling user activity by subreddit
+     * Average time between consecutive requests
+
+3. **Preprocess the data for the task**
+   - `notebooks/preliminary_analysis.ipynb` - Data exploration and preparation
+   - `src/pipeline.py` - Data preprocessing pipeline implementation
+
+4. **Build a machine learning model**
+   - `notebooks/building_ml_model.ipynb` - Model development, evaluation, and selection
+   - `src/train.py` - Model training script using FLAML AutoML
+
+5. **Export your model**
+   - `src/train.py` - Model export functionality
+   - `models/pizza_request_model.joblib` - The exported model file
+
+### Second Part: Serving Your Model
+
+6. **Implement a REST service**
+   - `src/main.py` - FastAPI application with prediction endpoint
+   - `src/schemas.py` - Pydantic schemas for request validation
+
+7. **Containerize the service** 
+   - `Dockerfile` - Container configuration for the API service
+   - `docker-compose.yml` - Multi-service orchestration (API + PostgreSQL)
+
+8. **Log your predictions**
+   - `src/database.py` - Database configuration and connection management
+   - `src/models.py` - SQLAlchemy model for prediction logging
+   - `src/main.py` - Prediction logging implementation in the API
+
+9. **Test your service**
+   - `tests/` - Test suite including:
+     * Valid API call tests
+     * Invalid API call tests
+     * Integration tests for database logging
+
 
 ## 🏗️ Project Structure
 
@@ -79,7 +118,7 @@ The entire analysis can be found in `notebooks/preliminary_analysis.ipynb`.
 
 ### Performance
 
-*   **ROC AUC**: The final model achieved a score of **0.7574**, compared to a baseline of 0.6237.
+*   **ROC AUC**: The final model achieved a score of **0.7550** ROC on holdout test set and 0.7267 on internal validation: .
 *   **Cross-validation**: Stratified 5-fold cross-validation was used to handle class imbalance.
 *   **Model**: The best-performing algorithm selected by FLAML was a tuned **RandomForestClassifier**.
 
@@ -99,25 +138,32 @@ The entire pipeline and model selection process can be found in `notebooks/build
 
 ```bash
 # Valid prediction request
-curl -X POST "http://localhost:8000/predict" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "request_title": "Broke college student hoping for pizza",
-       "request_text_edit_aware": "I have exams tomorrow and would be grateful for a pizza",
-       "unix_timestamp_of_request_utc": 1380481858.0,
-       "requester_account_age_in_days_at_request": 365.5,
-       "requester_days_since_first_post_on_raop_at_request": 0.0,
-       "requester_number_of_comments_at_request": 25,
-       "requester_number_of_comments_in_raop_at_request": 2,
-       "requester_number_of_posts_at_request": 10,
-       "requester_number_of_posts_on_raop_at_request": 1,
-       "requester_number_of_subreddits_at_request": 5,
-       "requester_upvotes_minus_downvotes_at_request": 150,
-       "requester_upvotes_plus_downvotes_at_request": 250,
-       "requester_subreddits_at_request": ["funny", "askreddit"],
-       "request_id": "t3_example",
-       "requester_username": "student123"
-     }'
+curl -X 'POST' \
+  'http://127.0.0.1:8000/predict' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "request_id": "t3_w5491",
+  "request_text_edit_aware": "I have an exam tomorrow and haven'\''t eaten all day. A pizza would be a lifesaver!",
+  "request_title": "Broke college student hoping for a pizza",
+  "requester_account_age_in_days_at_request": 365.5,
+  "requester_days_since_first_post_on_raop_at_request": 0,
+  "requester_number_of_comments_at_request": 25,
+  "requester_number_of_comments_in_raop_at_request": 2,
+  "requester_number_of_posts_at_request": 10,
+  "requester_number_of_posts_on_raop_at_request": 1,
+  "requester_number_of_subreddits_at_request": 5,
+  "requester_subreddits_at_request": [
+    "funny",
+    "askreddit",
+    "pics"
+  ],
+  "requester_upvotes_minus_downvotes_at_request": 150,
+  "requester_upvotes_plus_downvotes_at_request": 250,
+  "requester_username": "studious_student",
+  "unix_timestamp_of_request": 1380481858,
+  "unix_timestamp_of_request_utc": 1380481858
+}
 ```
 
 **Response:**
@@ -144,11 +190,14 @@ docker-compose down
 
 ### Manual Setup
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+You have to comment the `POSTGRES_HOST=db` line in the `.env` file and use `localhost` instead, as the database is not running in a container.
 
-# Start the API (development)
+```bash
+# 1. Start only the database container
+docker compose up db -d
+
+# 2. Install dependencies and run API locally
+pip install -r requirements.txt
 uvicorn src.main:app --reload
 
 # Access API documentation at http://localhost:8000/docs
@@ -166,7 +215,7 @@ uvicorn src.main:app --reload
 
 ```bash
 # Run all tests
-pytest tests/ -v
+python -m pytest tests -v
 ```
 
 ## 📊 Model Performance & Evaluation
@@ -199,9 +248,6 @@ POSTGRES_PASSWORD=supersecret
 POSTGRES_DB=pizzadb
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
-
-# Testing
-TESTING=false  # Set to "true" for test mode
 ```
 
 ## 📈 Future Improvements
