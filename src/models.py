@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, String, Float, JSON, DateTime
 from database import Base
 
 
-# Now, define your table model here, inheriting from the imported Base
+# Now, we define your table model here, inheriting from the imported Base
 class PredictionLog(Base):
     __tablename__ = "prediction_logs"
 

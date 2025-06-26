@@ -13,7 +13,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy the rest of your application code into the container
-COPY . .
+COPY ./models/pizza_request_model.joblib ./models/
+COPY ./src .
 
 # 6. Expose the port the app runs on (informational)
 EXPOSE 8000
