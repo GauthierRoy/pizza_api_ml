@@ -6,6 +6,10 @@ A machine learning service that predicts whether a Reddit "Random Acts of Pizza"
 
 This project analyzes 4,040 pizza requests from the Reddit community "Random Acts of Pizza" (December 2010 - September 2013) to build a predictive model and serve it via a REST API. The goal is to predict whether a requester will receive a pizza based on various features like account age, posting history, request content, and timing.
 
+## Setup
+
+The project was developed with Python 3.12.11. You can find the dependencies in `requirements.txt`.
+
 ## Recommended Reading Order
 
 ## 📚 Challenge Question Mapping
