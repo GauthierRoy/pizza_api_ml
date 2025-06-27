@@ -113,8 +113,7 @@ The entire analysis can be found in `notebooks/preliminary_analysis.ipynb`.
     *   Numeric features: `StandardScaler`
     *   Categorical features: `OneHotEncoder`
     *   Text features: `TfidfVectorizer` (1000 features, English stopwords)
-*   **Algorithm**: Automated model selection using **FLAML** (Fast and Lightweight AutoML).
-*   **Evaluation**: **ROC AUC** was used as the primary metric, which is appropriate for imbalanced classification.
+*   **Evaluation**: **F1 Score** was used as the primary metric, which is appropriate for imbalanced classification.
 
 ### Performance
 
@@ -215,14 +214,6 @@ uvicorn src.main:app --reload
 # Run all tests
 python -m pytest tests -v
 ```
-
-## 📊 Model Performance & Evaluation
-
-### Metrics Used
-
-*   **Primary**: F1-score (handles class imbalance well).
-*   **Secondary**: Precision, Recall, ROC AUC. 
-*   **Cross-validation**: Stratified K-fold to ensure representative splits.
 
 ## 🔧 Configuration
 
