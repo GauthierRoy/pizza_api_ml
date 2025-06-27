@@ -58,7 +58,7 @@ def running_service():
         # start Docker containers
         print("\n--- [SETUP] Starting Docker services... ---")
         subprocess.run(["docker", "compose", "up", "-d", "--build"], check=True)
-
+        time.sleep(10)
         # Wait for the API to be available
         for i in range(15):  # Wait up to 30 seconds
             try:

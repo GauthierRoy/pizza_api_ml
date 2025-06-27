@@ -1,6 +1,6 @@
 # Pizza Request Success Predictor
 
-A machine learning service that predicts whether a Reddit "Random Acts of Pizza" request will be fulfilled, built as part of a take-home challenge for CybelAngel's machine learning engineer position.
+A machine learning service that predicts whether a Reddit "Random Acts of Pizza" request will be fulfilled.
 
 ## 📋 Project Overview
 
@@ -59,7 +59,7 @@ This project analyzes 4,040 pizza requests from the Reddit community "Random Act
 ## 🏗️ Project Structure
 
 ```
-cybel_test/
+pizza_api_ml/
 ├── notebooks/                      # Jupyter notebooks for analysis
 │   ├── preliminary_analysis.ipynb  # Data exploration and statistics
 │   └── building_ml_model.ipynb     # Model development and training
